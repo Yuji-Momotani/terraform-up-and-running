@@ -1,0 +1,30 @@
+# Terraform working directory
+**/.terraform/*
+
+# Terraform state can contain sensitive values
+*.tfstate
+*.tfstate.*
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Local variable files may contain secrets
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Local override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Generated plan files
+*.tfplan
+
+# Local OS files
+.DS_Store
+
+# Local scratch files used during lessons
+/tmp/
