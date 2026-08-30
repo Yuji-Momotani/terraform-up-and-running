@@ -1,6 +1,6 @@
 # Terraform 学習進捗
 
-最終更新: 2026-08-27
+最終更新: 2026-08-30
 
 ## 全体目標
 
@@ -12,14 +12,14 @@
 ## 現在地
 
 - 進行中: 第2章「Terraformをはじめよう」
-- 現在の節: 2.3 サーバ1台のデプロイ（構成作成・plan）
+- 現在の節: 2.4 Webサーバ1台のデプロイ（完了）
 - Terraform CLI: 1.15.8（darwin_arm64）をインストール済み。Homebrew tapのstable版として継続使用
 - AWS CLI: 2.36.32（darwin arm64）をインストール済み
 - Git: 2.39.5を確認済み
 - AWSアカウント: rootで初期設定後、`administrator-user` IAMユーザーを作成済み
 - AWSアカウント: developer IAMユーザーへ `PowerUserAccess` と `SignInLocalDevelopmentAccess` を付与済み。コンソールログイン確認済み
 - AWS認証: `terraform-learning`プロファイルを作成済み。`login_session`による短期認証を使用
-- AWSリージョン: 未決定
+- AWSリージョン: `ap-northeast-1`
 
 ## 第2章チェックポイント
 
@@ -29,7 +29,7 @@
 - [x] AWS CLI v2をインストールしてバージョンを確認する
 - [x] `aws sts get-caller-identity` で利用主体を確認する
 - [x] EC2インスタンス1台の構成を理解してデプロイする
-- [ ] User DataでWebサーバを起動する
+- [x] User DataでWebサーバを起動する
 - [ ] 入力変数と出力値を使う
 - [ ] Auto Scaling Groupを使う
 - [ ] Application Load Balancerを使う
@@ -53,6 +53,17 @@
 - AWS ProviderのprofileをHCLで指定しない場合、`AWS_PROFILE`などの認証情報チェーンから選択される。stateには実行時のprofile名は保存されない。
 - EC2へ `Environment = "learning"` タグを適用し、HCLとローカルstateの両方に存在することを確認した。
 - planの属性行に付く `+` は追加、`-` は削除を表す。リソース全体の `~` はin-place更新を表す。
+- `.terraform/` はProvider・Module・backend初期化情報など、`terraform init`で再生成できるローカル作業データなのでGit管理しない。
+- `.tfstate` は開発者ごとに異なってよいファイルではない。同じ管理対象には単一の正本stateが必要で、チームではロック・暗号化・アクセス制御を備えたremote backendで共有する。
+- `.terraform.lock.hcl` は選択されたProviderバージョンとチェックサムを再現するためGit管理する。
+- `resource "aws_instance" "example"` の `example` はTerraform内のローカル名で、resource address `aws_instance.example` の一部になる。AWS上の表示名には反映されない。
+- AWS EC2コンソール上の名前は `tags.Name` によって設定される。resource labelの改名はstate addressの変更になるため、既存リソースでは `moved` block等を使って安全に行う。
+- `user_data`でAmazon Linux 2023へApacheを導入し、`curl`で `Hello, World!` が返ることを確認した。
+- `user_data_replace_on_change = true` により、user dataの追加・変更時にEC2が置換される。planの `-/+` と `forces replacement` を確認した。
+- `aws_security_group.web.id` の属性参照から暗黙的依存関係が作られ、apply時にSecurity GroupがEC2より先に作成される。
+- Security Groupルールは、現在のAWS Providerの推奨に合わせて `aws_vpc_security_group_ingress_rule` と `aws_vpc_security_group_egress_rule` で個別管理する。
+- outbound用リソースを誤ってingressとして定義しても構文上は有効なため、`terraform validate`だけでは検出できない。planで方向・プロトコル・CIDRまで確認する必要がある。
+- egressの `ip_protocol = "-1"` は全IPプロトコルを表す。`cidr_ipv4 = "0.0.0.0/0"` と組み合わせると、すべてのIPv4宛てへの送信通信を許可する。
 
 ## 章末問題
 
@@ -60,4 +71,4 @@
 
 ## 次回の開始点
 
-適用後のplanが `No changes` になることを確認する。その後Gitを初期化し、HCLとlock fileは追跡し、stateと`.terraform`は除外する。
+2.5へ進み、入力変数と出力値を使ってWebサーバの設定をパラメータ化する。
