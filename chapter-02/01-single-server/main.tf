@@ -28,9 +28,9 @@ resource "aws_vpc_security_group_ingress_rule" "http" {
   description       = "Allow HTTP from the internet"
 
   cidr_ipv4   = "0.0.0.0/0"
-  from_port   = 80
+  from_port   = var.server_port
   ip_protocol = "tcp"
-  to_port     = 80
+  to_port     = var.server_port
 }
 
 resource "aws_vpc_security_group_egress_rule" "all" {
@@ -50,6 +50,7 @@ resource "aws_instance" "example" {
   user_data = <<-EOF
     #!/bin/bash
     dnf install -y httpd
+    sed -i 's/^Listen 80$/Listen ${var.server_port}/' /etc/httpd/conf/httpd.conf
     echo "Hello, World!" > /var/www/html/index.html
     systemctl enable --now httpd
   EOF

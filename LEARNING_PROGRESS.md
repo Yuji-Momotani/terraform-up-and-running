@@ -12,7 +12,7 @@
 ## 現在地
 
 - 進行中: 第2章「Terraformをはじめよう」
-- 現在の節: 2.4 Webサーバ1台のデプロイ（完了）
+- 現在の節: 2.5 設定可能なWebサーバのデプロイ（完了）
 - Terraform CLI: 1.15.8（darwin_arm64）をインストール済み。Homebrew tapのstable版として継続使用
 - AWS CLI: 2.36.32（darwin arm64）をインストール済み
 - Git: 2.39.5を確認済み
@@ -30,7 +30,7 @@
 - [x] `aws sts get-caller-identity` で利用主体を確認する
 - [x] EC2インスタンス1台の構成を理解してデプロイする
 - [x] User DataでWebサーバを起動する
-- [ ] 入力変数と出力値を使う
+- [x] 入力変数と出力値を使う
 - [ ] Auto Scaling Groupを使う
 - [ ] Application Load Balancerを使う
 - [ ] 全リソースを安全に削除する
@@ -64,6 +64,12 @@
 - Security Groupルールは、現在のAWS Providerの推奨に合わせて `aws_vpc_security_group_ingress_rule` と `aws_vpc_security_group_egress_rule` で個別管理する。
 - outbound用リソースを誤ってingressとして定義しても構文上は有効なため、`terraform validate`だけでは検出できない。planで方向・プロトコル・CIDRまで確認する必要がある。
 - egressの `ip_protocol = "-1"` は全IPプロトコルを表す。`cidr_ipv4 = "0.0.0.0/0"` と組み合わせると、すべてのIPv4宛てへの送信通信を許可する。
+- `server_port`を`number`型の入力変数として定義し、Security Group・Apacheの待受ポート・Web URLで共通利用した。
+- HCLの式を直接受け取る引数では`var.server_port`と参照し、heredocなどの文字列内では`${var.server_port}`で補間する。
+- 入力値は`default`、`-var`、`TF_VAR_<NAME>`などから渡せる。`-var`はそのコマンド実行時だけ値を上書きする。
+- `number`型の`server_port`へ非数値を渡し、AWS APIを呼び出す前にTerraformが`Invalid value for input variable`を返すことを確認した。
+- `output`はAWSリソースではないためPlanのリソース操作数には含まれないが、`Changes to Outputs`へ表示され、値はstateに記録される。
+- `terraform output -raw web_url`を`curl`へ渡し、`Hello, World!`が返ることを確認した。
 
 ## 章末問題
 
@@ -71,4 +77,4 @@
 
 ## 次回の開始点
 
-2.5へ進み、入力変数と出力値を使ってWebサーバの設定をパラメータ化する。
+2.6へ進み、Auto Scaling Groupを使ってWebサーバを複数台へ拡張する。
