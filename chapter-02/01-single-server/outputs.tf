@@ -1,9 +1,9 @@
-output "public_ip" {
-  description = "The public IPv4 address of the web server"
-  value       = aws_instance.example.public_ip
+output "autoscaling_group_name" {
+  description = "The name of the Auto Scaling Group"
+  value       = aws_autoscaling_group.web.name
 }
 
-output "web_url" {
-  description = "The URL of the web server"
-  value       = "http://${aws_instance.example.public_ip}:${var.server_port}"
+output "launch_template_id" {
+  description = "The ID of the EC2 Launch Template"
+  value       = aws_launch_template.web.id
 }
